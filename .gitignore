@@ -1,0 +1,67 @@
+# --- Python ----------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.eggs/
+build/
+dist/
+pip-wheel-metadata/
+
+# --- Virtual envs ----------------------------------------------------------
+venv/
+.venv/
+env/
+.env.local
+
+# --- Secrets / local config ------------------------------------------------
+# Keep service-level .env files out of the repo. Each subproject already has
+# its own .env that should NOT be committed.
+.env
+*.env.local
+*.pem
+*.key
+
+# --- Editor / IDE ----------------------------------------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+.DS_Store
+Thumbs.db
+
+# --- Test / lint caches ----------------------------------------------------
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.tox/
+
+# --- Runtime artefacts -----------------------------------------------------
+# live_data_feeds writes normalized .ts clips and HLS segments here.
+live_data_feeds/.normalized/
+live_data_feeds/.tmp/
+
+# YOLO writes annotated debug frames + downloads model weights on first run.
+yolo_inference/annotated.jpg
+yolo_inference/*.pt
+!yolo_inference/yolo11n.pt
+
+# --- Heavy media -----------------------------------------------------------
+# Don't commit raw surveillance footage or the voice analysis corpus.
+live_data_feeds/surveillance/
+live_data_feeds/voice analysis/
+
+# --- Docker / compose ------------------------------------------------------
+# docker-compose override files are typically machine-local.
+docker-compose.override.yml
+docker-compose.override.yaml
+
+# --- OS / misc -------------------------------------------------------------
+*.log
+*.bak
+*.tmp

@@ -1,0 +1,34 @@
+# Core YOLO + multi-object tracking.
+# Ultralytics 8.3+ ships YOLO11 weights and the ByteTrack / BoT-SORT trackers.
+ultralytics>=8.3.0
+
+# PyTorch.
+#
+# On the dev box (no GPU) the plain `torch` / `torchvision` lines below pull
+# the CPU build from PyPI — no action needed.
+#
+# On the prod GPU server (CUDA 13), install the CUDA 13 wheels INSTEAD:
+#
+#   pip install --upgrade torch torchvision \
+#       --index-url https://download.pytorch.org/whl/cu130
+#
+# Or pin them directly in this file by replacing the two `torch*` lines with:
+#
+#   --extra-index-url https://download.pytorch.org/whl/cu130
+#   torch>=2.5.0
+#   torchvision>=0.20.0
+#
+# Verify the CUDA build with:
+#   python -c "import torch; print(torch.cuda.is_available(), torch.version.cuda)"
+torch>=2.5.0
+torchvision>=0.20.0
+
+# Frame decode / encode / annotation.
+opencv-python>=4.8.0
+numpy>=1.24.0,<2.3.0
+
+# WebSocket server + reference client.
+websockets>=12.0
+
+# .env loader for runtime configuration.
+python-dotenv>=1.0.0

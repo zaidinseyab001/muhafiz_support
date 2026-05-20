@@ -1,0 +1,74 @@
+services:
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: muhafiz_ollama
+    restart: unless-stopped
+    entrypoint: ["/bin/sh", "/entrypoint.sh"]
+    volumes:
+      - ollama_models:/root/.ollama
+      - ./ollama/entrypoint.sh:/entrypoint.sh:ro
+    ports:
+      - "11434:11434"
+    environment:
+      OLLAMA_HOST: "0.0.0.0:11434"
+      OLLAMA_KEEP_ALIVE: "30m"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  yolo:
+    build:
+      context: ./yolo_inference
+      dockerfile: Dockerfile
+    image: muhafiz/yolo_inference:latest
+    container_name: muhafiz_yolo
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./yolo_inference/.env
+    environment:
+      YOLO_DEVICE: "auto"
+      NVIDIA_VISIBLE_DEVICES: "all"
+      NVIDIA_DRIVER_CAPABILITIES: "compute,utility,video"
+    volumes:
+      - yolo_cache:/root/.cache
+      - ultralytics_cache:/root/.config/Ultralytics
+    depends_on:
+      - ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  live_feeds:
+    build:
+      context: ./live_data_feeds
+      dockerfile: Dockerfile
+    image: muhafiz/live_data_feeds:latest
+    container_name: muhafiz_live_feeds
+    restart: unless-stopped
+    ports:
+      - "8181:8181"
+    environment:
+      PORT: "8181"
+    volumes:
+      - ./live_data_feeds/surveillance:/app/surveillance:ro
+      - ./live_data_feeds/voice analysis:/app/voice analysis:ro
+      - live_feeds_normalized:/app/.normalized
+      - live_feeds_tmp:/app/.tmp
+
+volumes:
+  ollama_models:
+  yolo_cache:
+  ultralytics_cache:
+  live_feeds_normalized:
+  live_feeds_tmp:

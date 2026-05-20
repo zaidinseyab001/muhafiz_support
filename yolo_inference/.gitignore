@@ -1,0 +1,98 @@
+# ---------------------------------------------------------------------------
+# Python
+# ---------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# ---------------------------------------------------------------------------
+# Virtual environments
+# ---------------------------------------------------------------------------
+venv/
+.venv/
+venv
+env/
+.env.local
+
+# ---------------------------------------------------------------------------
+# Runtime configuration
+# ---------------------------------------------------------------------------
+# .env holds per-host runtime config (device, ports, thresholds). Each
+# deployment edits its own copy — do not commit. Commit a `.env.example`
+# instead if you want to document the available keys.
+.env
+
+# ---------------------------------------------------------------------------
+# YOLO / Ultralytics artefacts
+# ---------------------------------------------------------------------------
+# Auto-downloaded model weights — pulled on first run, no need to track.
+*.pt
+*.pth
+*.onnx
+*.engine
+*.torchscript
+*.mlmodel
+*.tflite
+
+# Ultralytics default output directory (training runs, predict dumps).
+runs/
+
+# Ultralytics local settings file when present in the repo dir.
+ultralytics_settings.yaml
+
+# ---------------------------------------------------------------------------
+# Project output
+# ---------------------------------------------------------------------------
+# Annotated frames produced by `client_example.py --save-annotated`.
+out/
+output/
+
+# Ad-hoc captures / test images dropped into the repo root.
+*.jpg
+*.jpeg
+*.png
+*.webp
+*.bmp
+# ...but DO keep anything intentionally checked into a docs/ folder.
+!docs/**/*.jpg
+!docs/**/*.jpeg
+!docs/**/*.png
+
+# Recorded video samples.
+*.mp4
+*.avi
+*.mov
+*.mkv
+
+# Logs.
+*.log
+logs/
+
+# ---------------------------------------------------------------------------
+# Editors / IDEs
+# ---------------------------------------------------------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ---------------------------------------------------------------------------
+# OS junk
+# ---------------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/

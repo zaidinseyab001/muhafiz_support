@@ -1,0 +1,18 @@
+.git
+.gitignore
+.env
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tmp/
+.normalized/
+README.md
+Dockerfile
+.dockerignore
+# Heavy media — mounted at runtime via docker-compose volumes instead of baked in.
+surveillance/
+voice analysis/
