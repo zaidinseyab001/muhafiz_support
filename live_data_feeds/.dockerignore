@@ -15,4 +15,4 @@ Dockerfile
 .dockerignore
 # Heavy media — mounted at runtime via docker-compose volumes instead of baked in.
 # surveillance/
-voice analysis/
+# voice analysis/
