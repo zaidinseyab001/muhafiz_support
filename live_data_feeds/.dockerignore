@@ -9,10 +9,10 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 .tmp/
-.normalized/
+# .normalized/
 README.md
 Dockerfile
 .dockerignore
 # Heavy media — mounted at runtime via docker-compose volumes instead of baked in.
-surveillance/
+# surveillance/
 voice analysis/
