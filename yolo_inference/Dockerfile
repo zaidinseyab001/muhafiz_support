@@ -42,6 +42,12 @@ RUN pip install -r requirements.txt
 
 COPY . .
 
+# Bake yolo11n.pt into the image so the airgapped host doesn't try to
+# download it on first inference. Ultralytics resolves the bare name
+# against /app/, the model cache, then the Ultralytics CDN — touching the
+# constructor here fixes the weight in /app/yolo11n.pt if it isn't already.
+RUN python -c "from ultralytics import YOLO; YOLO('yolo11x.pt')"
+
 EXPOSE 5000
 
 CMD ["python", "server.py"]

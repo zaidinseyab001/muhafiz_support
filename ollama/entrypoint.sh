@@ -1,8 +1,14 @@
 #!/bin/sh
 # Start ollama serve in the background, wait for the API to come up,
-# pull the three models we need (no-op if already cached in the
-# mounted volume), then hand the foreground back to ollama serve.
-set -e
+# pull the models we need (no-op if already cached in the mounted
+# volume — which is the airgap path), then hand the foreground back
+# to ollama serve.
+#
+# Airgap behavior: a failed `ollama pull` is logged and skipped rather
+# than fatal, so the daemon stays up even if one model is missing or
+# the box has no outbound network. The expectation in airgap is that
+# the ollama_models volume was pre-populated by the bundle.
+set -u
 
 ollama serve &
 SERVE_PID=$!
@@ -16,10 +22,21 @@ until ollama list >/dev/null 2>&1; do
 done
 echo "[ollama-init] daemon is ready."
 
-for model in qwen2.5:14b gemma3:27b nomic-embed-text:latest; do
-    echo "[ollama-init] ensuring model: ${model}"
-    ollama pull "${model}"
+# Edit this list to add/remove models. In an airgapped deploy these
+# must already be present in the mounted ollama_models volume; the
+# pull below becomes a no-op when the blobs are cached locally.
+MODELS="qwen2.5:14b gemma3:27b nomic-embed-text:latest"
+
+for model in $MODELS; do
+    if ollama list 2>/dev/null | awk 'NR>1 {print $1}' | grep -qx "${model}"; then
+        echo "[ollama-init] model already cached: ${model}"
+        continue
+    fi
+    echo "[ollama-init] pulling model: ${model}"
+    if ! ollama pull "${model}"; then
+        echo "[ollama-init] WARNING: pull failed for ${model} — continuing (airgap?)"
+    fi
 done
 
-echo "[ollama-init] all models present — attaching to serve (pid ${SERVE_PID})."
+echo "[ollama-init] init done — attaching to serve (pid ${SERVE_PID})."
 wait "${SERVE_PID}"

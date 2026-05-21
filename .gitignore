@@ -10,6 +10,8 @@ build/
 dist/
 pip-wheel-metadata/
 
+_bundle/
+
 # --- Virtual envs ----------------------------------------------------------
 venv/
 .venv/

@@ -1,11 +1,16 @@
 services:
 
   ollama:
-    image: ollama/ollama:latest
+    build:
+      context: ./ollama
+      dockerfile: Dockerfile
+    image: muhafiz/ollama:latest
     container_name: muhafiz_ollama
     restart: unless-stopped
     entrypoint: ["/bin/sh", "/entrypoint.sh"]
     volumes:
+      # Named volume initializes from the image's /root/.ollama on first
+      # boot, so the baked models land here and persist across restarts.
       - ollama_models:/root/.ollama
       - ./ollama/entrypoint.sh:/entrypoint.sh:ro
     ports:
