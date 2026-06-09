@@ -25,7 +25,7 @@ Write-Host "==> [1/3] Cleaning previous bundle staging"
 if (Test-Path $BundleDir) { Remove-Item -Recurse -Force $BundleDir }
 New-Item -ItemType Directory -Force -Path $ImagesDir | Out-Null
 
-Write-Host "==> [2/3] Building all images (slow step - ~26 GB of LLM blobs baked in)"
+Write-Host "==> [2/3] Building all images (slow step - ~106 GB of LLM blobs baked in)"
 docker compose -p $ProjectName build
 if ($LASTEXITCODE -ne 0) { throw "docker compose build failed" }
 

@@ -29,7 +29,7 @@ echo "==> [1/3] Cleaning previous bundle staging"
 rm -rf "${BUNDLE_DIR}"
 mkdir -p "${IMAGES_DIR}"
 
-echo "==> [2/3] Building all images (this is the slow step — ~26 GB of LLM blobs"
+echo "==> [2/3] Building all images (this is the slow step — ~106 GB of LLM blobs"
 echo "         get pulled into the ollama image, plus PyTorch cu130 wheels into yolo)"
 docker compose -p "${PROJECT_NAME}" build
 

@@ -3,9 +3,10 @@
 This bundle ships everything needed to run the stack on a host with **no internet
 access**. All three Docker images are pre-built and self-contained:
 
-- `muhafiz/ollama:latest` — `qwen2.5:14b`, `gemma3:27b`, `nomic-embed-text:latest`
-  baked into `/root/.ollama` (~26 GB layer).
-- `muhafiz/yolo_inference:latest` — CUDA 13 + PyTorch cu130 + `yolo11n.pt` baked in.
+- `muhafiz/ollama:latest` — `qwen2.5:72b-instruct-q8_0`, `gemma3:27b-it-q8_0`,
+  `nomic-embed-text:latest` baked into `/root/.ollama` (~106 GB layer). Sized
+  for the 141 GB H200 deploy target.
+- `muhafiz/yolo_inference:latest` — CUDA 13 + PyTorch cu130 + `yolo11x.pt` baked in.
 - `muhafiz/live_data_feeds:latest` — FastAPI HLS + audio server.
 
 No volume restore, no model pull, no network calls at runtime.
@@ -61,7 +62,7 @@ muhafiz_support/
 ├── live_data_feeds/              <- source
 └── _bundle/
     └── images/
-        ├── ollama.tar            <- ~26 GB
+        ├── ollama.tar            <- ~106 GB
         ├── yolo_inference.tar    <- ~8 GB
         └── live_data_feeds.tar   <- ~1 GB
 ```
@@ -98,7 +99,14 @@ Containers will recreate on the next `compose up`.
 .\scripts\build_airgap.ps1
 ```
 
-Output is `..\muhafiz_support.tar` next to the project folder. Expect ~30–35 GB.
+Output is `..\muhafiz_support.tar` next to the project folder. Expect ~115 GB.
 The slow step is the ollama image build — it runs `ollama serve` during build
-and pulls the three models into a single layer. First build takes ~30+ min on
-a decent connection.
+and pulls the three models (~106 GB) into a single layer. Budget a few hours
+on a decent connection, and make sure the build box has enough free disk —
+see the disk note below.
+
+> **Disk on the build box:** the bundle is staged three times — the docker
+> image (~106 GB), the `docker save` tar in `_bundle/images/` (~106 GB), and
+> the final wrapping `muhafiz_support.tar` (~115 GB). Keep **~350 GB free**
+> on the connected machine, or build the ollama image tar separately and skip
+> the outer wrap.

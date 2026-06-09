@@ -4,7 +4,7 @@ Three services orchestrated with docker-compose:
 
 | Service       | Image / Build               | Host port | What it does                                                                |
 | ------------- | --------------------------- | --------- | --------------------------------------------------------------------------- |
-| `ollama`      | `ollama/ollama:latest`      | `11434`   | Local LLM runtime. Pulls `qwen2.5:14b`, `gemma3:27b`, `nomic-embed-text` on first start. |
+| `ollama`      | `ollama/ollama:latest`      | `11434`   | Local LLM runtime. Bakes `qwen2.5:72b-instruct-q8_0`, `gemma3:27b-it-q8_0`, `nomic-embed-text` into the image (sized for a 141 GB H200). |
 | `yolo`        | `./yolo_inference`          | `5000`    | YOLO WebSocket inference server on CUDA 13 + PyTorch cu130 wheels.          |
 | `live_feeds`  | `./live_data_feeds`         | `8181`    | FastAPI HLS video + MP3 audio fan-out (ffmpeg-driven).                      |
 

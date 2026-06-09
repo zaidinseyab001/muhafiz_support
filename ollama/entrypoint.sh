@@ -25,7 +25,7 @@ echo "[ollama-init] daemon is ready."
 # Edit this list to add/remove models. In an airgapped deploy these
 # must already be present in the mounted ollama_models volume; the
 # pull below becomes a no-op when the blobs are cached locally.
-MODELS="qwen2.5:14b gemma3:27b nomic-embed-text:latest"
+MODELS="qwen2.5:72b-instruct-q8_0 gemma3:27b-it-q8_0 nomic-embed-text:latest"
 
 for model in $MODELS; do
     if ollama list 2>/dev/null | awk 'NR>1 {print $1}' | grep -qx "${model}"; then
