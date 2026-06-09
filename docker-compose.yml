@@ -71,6 +71,32 @@ services:
       - live_feeds_normalized:/app/.normalized
       - live_feeds_tmp:/app/.tmp
 
+  whisper:
+    build:
+      context: ./whisper
+      dockerfile: Dockerfile
+    image: muhafiz/whisper:latest
+    container_name: muhafiz_whisper
+    restart: unless-stopped
+    ports:
+      - "${WHISPER_PORT:-8000}:${WHISPER_PORT:-8000}"
+    env_file:
+      - ./.env
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:${WHISPER_PORT:-8000}/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      # large-v3 takes longer to load than small — give it room before failing.
+      start_period: 180s
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
 volumes:
   ollama_models:
   yolo_cache:

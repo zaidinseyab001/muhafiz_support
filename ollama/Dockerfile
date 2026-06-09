@@ -18,19 +18,24 @@
 # service, so OLLAMA_KEEP_ALIVE=always (see .env) keeps them all hot.
 FROM ollama/ollama:latest
 
-# Run the daemon in the background just long enough to `ollama pull` each
-# model into /root/.ollama, then shut it down so the layer is clean. The
-# `set -e` semantics mean any pull failure kills the build, which is the
-# behavior we want at build time (unlike runtime, where we tolerate it).
-RUN set -eux ; \
-    ollama serve & SERVE_PID=$! ; \
-    echo "[build] waiting for ollama daemon..." ; \
+# Pull each model in its OWN layer. ollama writes blobs to /root/.ollama on
+# the filesystem, so a model that finishes is baked into a cached layer — if a
+# later pull fails (bad tag, network, disk), a rebuild resumes at the broken
+# model instead of re-downloading the 77 GB Qwen from scratch. Each layer
+# starts the daemon, waits, pulls one model, then stops it. `set -e` aborts
+# the build on any pull failure (the behavior we want at build time).
+RUN set -eux ; ollama serve & SERVE_PID=$! ; \
     until ollama list >/dev/null 2>&1 ; do sleep 1 ; done ; \
-    echo "[build] daemon up — pulling models" ; \
     ollama pull qwen2.5:72b-instruct-q8_0 ; \
+    kill "${SERVE_PID}" ; wait "${SERVE_PID}" 2>/dev/null || true
+
+RUN set -eux ; ollama serve & SERVE_PID=$! ; \
+    until ollama list >/dev/null 2>&1 ; do sleep 1 ; done ; \
     ollama pull gemma3:27b-it-q8_0 ; \
+    kill "${SERVE_PID}" ; wait "${SERVE_PID}" 2>/dev/null || true
+
+RUN set -eux ; ollama serve & SERVE_PID=$! ; \
+    until ollama list >/dev/null 2>&1 ; do sleep 1 ; done ; \
     ollama pull nomic-embed-text:latest ; \
-    echo "[build] models pulled — stopping daemon" ; \
-    kill "${SERVE_PID}" ; \
-    wait "${SERVE_PID}" 2>/dev/null || true ; \
-    ollama --version
+    ollama list ; \
+    kill "${SERVE_PID}" ; wait "${SERVE_PID}" 2>/dev/null || true

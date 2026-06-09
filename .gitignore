@@ -53,6 +53,11 @@ yolo_inference/annotated.jpg
 yolo_inference/*.pt
 !yolo_inference/yolo11n.pt
 
+# Whisper: downloaded model weights (baked into the image at build time) +
+# build logs. Weights are pulled by whisper/01_download_model.sh on the build box.
+whisper/models/
+whisper/build_logs/
+
 # --- Heavy media -----------------------------------------------------------
 # Don't commit raw surveillance footage or the voice analysis corpus.
 live_data_feeds/surveillance/
