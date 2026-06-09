@@ -58,6 +58,10 @@ yolo_inference/*.pt
 whisper/models/
 whisper/build_logs/
 
+# Ollama: LLM blobs pulled on the build box (resumable) into the OLLAMA home,
+# then COPYed into the image by ollama/Dockerfile. ~106 GB — never commit.
+ollama/models/
+
 # --- Heavy media -----------------------------------------------------------
 # Don't commit raw surveillance footage or the voice analysis corpus.
 live_data_feeds/surveillance/

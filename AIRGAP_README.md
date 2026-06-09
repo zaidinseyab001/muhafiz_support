@@ -108,15 +108,47 @@ Containers will recreate on the next `compose up`.
 .\scripts\build_airgap.ps1
 ```
 
-The build script (in order): **downloads** the whisper-large-v3 weights into
-`whisper/models/`, **builds** all four images, **smoke-tests** the runnable
-services (whisper health, yolo + live_feeds import checks — `ollama` is skipped
-because its models can't load on a build box), **saves** the four images, and
-**tars** everything into `..\muhafiz_support.tar`. Expect ~123 GB. The slow step
-is the ollama image build (pulls ~106 GB of LLM blobs). Budget a few hours.
+The build script, in order:
 
-Toggles: `SKIP_SMOKE=1` (no GPU toolkit on the build box) and `SKIP_MODEL=1`
-(whisper weights already downloaded).
+1. **Pulls the Ollama models** on the host into `ollama/models/` — **resumable**.
+   The 77 GB Qwen blob is pulled by a throwaway `ollama/ollama` container into a
+   persistent folder, wrapped in a retry loop: if the link drops, Ollama
+   **continues the partial blob** on the next attempt instead of restarting.
+   (This is why pulling is *not* done inside `docker build` — a build RUN is not
+   resumable, so a single drop on a slow link means it never finishes.)
+2. **Downloads** the whisper-large-v3 weights into `whisper/models/`.
+3. **Builds** all four images — the ollama image just `COPY`s the pre-pulled
+   blobs (no network); yolo/whisper install their deps.
+4. **Smoke-tests** the runnable services (whisper health; yolo + live_feeds
+   import checks). `ollama` is skipped — its models can't load on a build box.
+5. **Saves** the four images and **tars** everything into `..\muhafiz_support.tar`
+   (~123 GB).
+
+Expect a few hours, dominated by the model download. The retry loop is
+effectively unlimited, so a flaky connection will eventually complete.
+
+Toggles: `SKIP_OLLAMA_PULL=1` (blobs already in `ollama/models`), `SKIP_MODEL=1`
+(whisper weights present), `SKIP_SMOKE=1` (no GPU toolkit on the build box),
+`MAX_PULL_ATTEMPTS=N` (give up after N tries instead of retrying forever),
+`OLLAMA_DNS=1.1.1.1` (DNS for the pull container).
+
+### Network / DNS troubleshooting (build box)
+
+If the pull is slow or keeps dropping with errors like
+`dial udp [fe80::1]:53: connect: network is unreachable` or
+`max retries exceeded: unexpected EOF`, your Docker DNS is resolving to a broken
+(IPv6 link-local) nameserver. The pull step already forces `--dns 1.1.1.1`, but
+the `docker compose build` step (yolo/whisper pip installs) uses the daemon's
+DNS. Fix it once for everything:
+
+```bash
+# /etc/docker/daemon.json
+{ "dns": ["1.1.1.1", "8.8.8.8"] }
+```
+```bash
+sudo systemctl restart docker
+```
+Then re-run `./scripts/build_airgap.sh` — it resumes the partial download.
 
 > **Disk on the build box:** the bundle is staged three times — the docker
 > images (~115 GB), the `docker save` tars in `_bundle/images/` (~115 GB), and
