@@ -48,7 +48,7 @@ if ($env:SKIP_OLLAMA_PULL -eq "1") {
     $i = 0
     while ($i -lt $maxAttempts) {
         $i++
-        docker run --rm --dns 1.1.1.1 --dns 8.8.8.8 -v "${OllamaModelsDir}:/root/.ollama" ollama/ollama:latest sh -c $pullSh
+        docker run --rm --dns 1.1.1.1 --dns 8.8.8.8 --entrypoint /bin/sh -v "${OllamaModelsDir}:/root/.ollama" ollama/ollama:latest -c $pullSh
         if ($LASTEXITCODE -eq 0) { $ok = $true; break }
         Write-Host "==> ollama pull interrupted (network). Resuming - attempt $i in 10s..."
         Start-Sleep -Seconds 10

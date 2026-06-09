@@ -71,8 +71,9 @@ else
     attempt=0
     until docker run --rm \
             --dns "${DNS1}" --dns 8.8.8.8 \
+            --entrypoint /bin/sh \
             -v "${OLLAMA_MODELS_DIR}:/root/.ollama" \
-            "${OLLAMA_BASE_IMAGE}" sh -c "${PULL_SH}"; do
+            "${OLLAMA_BASE_IMAGE}" -c "${PULL_SH}"; do
         attempt=$((attempt + 1))
         if [ "${attempt}" -ge "${MAX_PULL_ATTEMPTS}" ]; then
             echo "ERROR: ollama pull did not complete after ${MAX_PULL_ATTEMPTS} attempts." >&2
