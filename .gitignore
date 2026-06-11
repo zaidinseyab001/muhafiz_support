@@ -12,6 +12,9 @@ pip-wheel-metadata/
 
 _bundle/
 
+postman
+
+
 # --- Virtual envs ----------------------------------------------------------
 venv/
 .venv/

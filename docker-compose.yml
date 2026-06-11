@@ -66,8 +66,11 @@ services:
     env_file:
       - ./.env
     volumes:
-      - ./live_data_feeds/surveillance:/app/surveillance:ro
-      - ./live_data_feeds/voice analysis:/app/voice analysis:ro
+      # Surveillance/audio media is baked INTO the image (Dockerfile `COPY . .`,
+      # and .dockerignore does not exclude them). Do NOT bind-mount the host
+      # folders here — a bind-mount replaces the baked-in media with the (empty)
+      # host folder on the deploy box. To change the media, update the files and
+      # rebuild: ./scripts/build_airgap.sh live_feeds
       - live_feeds_normalized:/app/.normalized
       - live_feeds_tmp:/app/.tmp
 

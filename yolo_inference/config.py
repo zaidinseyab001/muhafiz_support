@@ -52,9 +52,31 @@ CLASSES: list[int] | None = (
 # ---------------------------------------------------------------------------
 # Device — auto-detect; honour explicit override
 # ---------------------------------------------------------------------------
+# Prefer the GPU, but fall back to CPU when it's full/too small (so a shared
+# dev box where the LLM already fills VRAM doesn't crash YOLO with CUDA OOM).
+AUTO_CPU_FALLBACK = os.getenv("YOLO_AUTO_CPU_FALLBACK", "1") == "1"
+# yolo11x FP32 needs only a few hundred MB to load; require a small margin.
+MIN_FREE_VRAM_MB = _env_int("YOLO_MIN_FREE_VRAM_MB", 1200)
+
+
+def _free_vram_mb(idx: int = 0) -> float | None:
+    try:
+        free, _total = torch.cuda.mem_get_info(idx)
+        return free / (1024 * 1024)
+    except Exception:
+        return None
+
+
 _device_env = os.getenv("YOLO_DEVICE", "auto").lower()
 if _device_env == "auto":
-    DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
+    if torch.cuda.is_available():
+        DEVICE = "cuda:0"
+        if AUTO_CPU_FALLBACK:
+            _free = _free_vram_mb(0)
+            if _free is not None and _free < MIN_FREE_VRAM_MB:
+                DEVICE = "cpu"
+    else:
+        DEVICE = "cpu"
 else:
     DEVICE = _device_env
 

@@ -32,7 +32,23 @@ class YoloInference:
             model_path, device, use_half, tracker_cfg,
         )
         self.model = YOLO(model_path)
-        self.model.to(device)
+        # Prefer the requested device, but if the GPU OOMs at load time (e.g. the
+        # LLM already filled VRAM on a shared box), fall back to CPU instead of
+        # crashing the whole connection.
+        try:
+            self.model.to(device)
+        except RuntimeError as exc:
+            if device.startswith("cuda") and config.AUTO_CPU_FALLBACK and "out of memory" in str(exc).lower():
+                log.warning("CUDA OOM loading YOLO on %s — falling back to CPU.", device)
+                try:
+                    torch.cuda.empty_cache()
+                except Exception:
+                    pass
+                device = "cpu"
+                use_half = False
+                self.model.to(device)
+            else:
+                raise
         self.device = device
         self.use_half = use_half
         self.tracker_cfg = tracker_cfg
