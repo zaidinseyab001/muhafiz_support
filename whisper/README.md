@@ -46,7 +46,12 @@ curl http://HOST:8000/health
 curl -X POST http://HOST:8000/transcribe -F 'file=@audio.wav'
 #    optional: -F language=en  -F task=transcribe  -F return_timestamps=true
 
-# 2) Finite URL (http/https/...): downloads + transcribes once
+# 2) Finite URL OR on-disk path: the surveillance audio corpus is mounted
+#    read-only at /data/audio, so saved clips transcribe by path (no upload):
+curl -X POST http://HOST:8000/transcribe_url \
+  -H 'Content-Type: application/json' \
+  -d '{"url":"/data/audio/clip.mp3","language":"en"}'
+#    ...or a remote URL:
 curl -X POST http://HOST:8000/transcribe_url \
   -H 'Content-Type: application/json' \
   -d '{"url":"http://host/clip.mp3","language":"en"}'

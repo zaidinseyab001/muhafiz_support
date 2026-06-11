@@ -55,11 +55,18 @@ curl -N -X POST http://HOST:8000/transcribe_stream \
   -H 'Content-Type: application/json' \
   -d '{"url":"http://live_feeds:8188/live_audio/stream"}'
 
-# a saved audio file
+# a saved clip from the mounted corpus (read-only at /data/audio) — by path
+curl -X POST http://HOST:8000/transcribe_url \
+  -H 'Content-Type: application/json' -d '{"url":"/data/audio/clip.mp3"}'
+
+# or an ad-hoc upload (no mount needed)
 curl -X POST http://HOST:8000/transcribe -F 'file=@clip.wav'
 ```
 
-(Requires `WHISPER_ALLOW_REMOTE_SOURCES=true`, the default.)
+The `whisper` service mirrors the other GPU services: it has the same NVIDIA
+runtime env as `yolo`, and the surveillance **audio corpus is mounted read-only
+at `/data/audio`** (the same `live_data_feeds/voice analysis` folder `live_feeds`
+serves). Live transcription uses `WHISPER_ALLOW_REMOTE_SOURCES=true` (the default).
 
 ## Reusing host-pulled ollama models
 

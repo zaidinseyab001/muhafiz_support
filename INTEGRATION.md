@@ -307,14 +307,21 @@ Response:
   "language": "en", "task": "transcribe", "filename": "clip.wav" }
 ```
 
-### 4.3 Finite URL — `POST /transcribe_url` (JSON)
+### 4.3 Finite URL **or on-disk path** — `POST /transcribe_url` (JSON)
 
-Downloads + transcribes a finite file once.
+`url` is handed straight to ffmpeg, so it accepts an `http(s)://` URL **or a file
+path inside the container**. The surveillance audio corpus is mounted read-only
+at **`/data/audio`**, so saved clips can be transcribed by path — no upload:
 ```json
-{ "url": "http://host/clip.mp3", "language": "en",
+{ "url": "/data/audio/clip.mp3", "language": "en",
   "task": "transcribe", "return_timestamps": true }
 ```
+```json
+{ "url": "http://host/clip.mp3", "language": "en" }
+```
 Response: same shape as `/transcribe`, with `"url"` instead of `"filename"`.
+(Requires `WHISPER_ALLOW_REMOTE_SOURCES=true`, the default — it gates this
+endpoint for both URLs and paths.)
 
 ### 4.4 Live stream → NDJSON — `POST /transcribe_stream` (JSON)
 

@@ -82,6 +82,18 @@ services:
       - "${WHISPER_PORT:-8000}:${WHISPER_PORT:-8000}"
     env_file:
       - ./.env
+    environment:
+      # Infrastructure-level GPU plumbing for the nvidia-container-runtime —
+      # kept in compose (not .env), mirroring the yolo service.
+      NVIDIA_VISIBLE_DEVICES: "all"
+      NVIDIA_DRIVER_CAPABILITIES: "compute,utility"
+    volumes:
+      # The same surveillance audio corpus that live_feeds streams, mounted
+      # read-only so whisper can transcribe files straight off disk by path:
+      #   POST /transcribe_url {"url":"/data/audio/<file>.mp3"}
+      # (ffmpeg reads the path directly). Ad-hoc clips can still be sent as a
+      # normal multipart upload to /transcribe without any mount.
+      - ./live_data_feeds/voice analysis:/data/audio:ro
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://localhost:${WHISPER_PORT:-8000}/health || exit 1"]
       interval: 30s
