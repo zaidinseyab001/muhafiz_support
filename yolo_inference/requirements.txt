@@ -28,7 +28,12 @@ opencv-python>=4.8.0
 numpy>=1.24.0,<2.3.0
 
 # WebSocket server + reference client.
-websockets>=12.0
+# Pinned to the 12.x line: server.py targets the v12 API
+# (websockets.server.WebSocketServerProtocol). websockets 14/15 switched the
+# default to a new asyncio server with stricter handshake parsing that rejected
+# some clients with "InvalidUpgrade: invalid Connection header". Pinning also
+# keeps airgap builds reproducible (an unpinned >=12.0 drifts to latest).
+websockets>=12.0,<13
 
 # .env loader for runtime configuration.
 python-dotenv>=1.0.0
