@@ -44,8 +44,8 @@ services:
     volumes:
       - yolo_cache:/root/.cache
       - ultralytics_cache:/root/.config/Ultralytics
-    depends_on:
-      - ollama
+    # depends_on:
+    #   - ollama
     deploy:
       resources:
         reservations:

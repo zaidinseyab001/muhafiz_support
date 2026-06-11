@@ -65,41 +65,60 @@ _resolved_dtype = "float32"
 _infer_lock = threading.Lock()
 
 
+def _free_vram_mb(device: str) -> Optional[float]:
+    """Free memory (MB) on the given cuda device, or None if it can't be read."""
+    try:
+        idx = int(device.split(":", 1)[1]) if ":" in device else 0
+        free, _total = torch.cuda.mem_get_info(idx)
+        return free / (1024 * 1024)
+    except Exception:  # noqa: BLE001
+        return None
+
+
 def _resolve_device() -> str:
+    """Pick the device, preferring CUDA but falling back to CPU when the GPU is
+    absent, too small, or already full (auto_cpu_fallback)."""
     want = settings.device.lower()
-    if want.startswith("cuda"):
-        if not torch.cuda.is_available():
+    if not want.startswith("cuda"):
+        return "cpu"
+
+    if not torch.cuda.is_available():
+        logger.warning(
+            "WHISPER_DEVICE=%s requested but CUDA is unavailable; using CPU. "
+            "(Did you run with --gpus all + NVIDIA Container Toolkit?)",
+            settings.device,
+        )
+        return "cpu"
+
+    # Pre-flight VRAM check: if the GPU doesn't have enough free memory, use CPU
+    # instead of OOM-ing partway through the load.
+    if settings.auto_cpu_fallback:
+        free_mb = _free_vram_mb(want)
+        if free_mb is not None and free_mb < settings.min_free_vram_mb:
             logger.warning(
-                "WHISPER_DEVICE=%s requested but CUDA is unavailable; using CPU. "
-                "(Did you run with --gpus all + NVIDIA Container Toolkit?)",
-                settings.device,
+                "Only %.0f MB free on %s (< %d MB required) — GPU is full/too "
+                "small; falling back to CPU.",
+                free_mb, want, settings.min_free_vram_mb,
             )
             return "cpu"
-        return settings.device
-    return "cpu"
+    return settings.device
 
 
-@app.on_event("startup")
-def load_model() -> None:
+def _build_pipeline(device: str, dtype) -> None:
+    """Load the model + processor onto `device` and build the ASR pipeline."""
     global _pipe, _resolved_device, _resolved_dtype
-
-    _resolved_device = _resolve_device()
-    on_gpu = _resolved_device.startswith("cuda")
-
-    dtype = _DTYPES.get(settings.compute_type.lower(), torch.float16)
-    if not on_gpu:
-        dtype = torch.float32
+    _resolved_device = device
     _resolved_dtype = str(dtype).replace("torch.", "")
 
     logger.info("Loading model '%s' on %s (dtype=%s)",
-                settings.model_path, _resolved_device, _resolved_dtype)
+                settings.model_path, device, _resolved_dtype)
     t0 = time.time()
 
     model = AutoModelForSpeechSeq2Seq.from_pretrained(
         settings.model_path, torch_dtype=dtype,
         low_cpu_mem_usage=True, local_files_only=True,
     )
-    model.to(_resolved_device)
+    model.to(device)
     processor = AutoProcessor.from_pretrained(settings.model_path, local_files_only=True)
 
     _pipe = pipeline(
@@ -108,11 +127,35 @@ def load_model() -> None:
         tokenizer=processor.tokenizer,
         feature_extractor=processor.feature_extractor,
         torch_dtype=dtype,
-        device=_resolved_device,
+        device=device,
         chunk_length_s=settings.chunk_length_s,
         batch_size=settings.batch_size,
     )
-    logger.info("Model ready in %.1fs", time.time() - t0)
+    logger.info("Model ready on %s in %.1fs", device, time.time() - t0)
+
+
+@app.on_event("startup")
+def load_model() -> None:
+    device = _resolve_device()
+    on_gpu = device.startswith("cuda")
+    dtype = _DTYPES.get(settings.compute_type.lower(), torch.float16) if on_gpu else torch.float32
+
+    try:
+        _build_pipeline(device, dtype)
+    except RuntimeError as exc:  # CUDA OOM surfaces as RuntimeError
+        msg = str(exc).lower()
+        if on_gpu and settings.auto_cpu_fallback and ("out of memory" in msg or "cuda" in msg):
+            logger.warning(
+                "GPU load failed (%s) — falling back to CPU.",
+                str(exc).splitlines()[0][:200],
+            )
+            try:
+                torch.cuda.empty_cache()
+            except Exception:  # noqa: BLE001
+                pass
+            _build_pipeline("cpu", torch.float32)
+        else:
+            raise
 
 
 # ---------------------------------------------------------------------------

@@ -34,8 +34,18 @@ if ($envLine) { $WhisperPort = ($envLine.Line -split '=',2)[1].Trim() }
 
 Write-Host "==> [1/6] Pulling Ollama models to ollama\models (resumable; skip with `$env:SKIP_OLLAMA_PULL=1)"
 $OllamaModelsDir = Join-Path $RepoRoot "ollama\models"
+$OllamaModels = @("qwen2.5:72b-instruct-q8_0", "gemma3:27b-it-q8_0", "nomic-embed-text:latest")
+# True only if every model's manifest already exists on disk.
+$ollamaPresent = $true
+$manifestBase = Join-Path $OllamaModelsDir "models\manifests\registry.ollama.ai\library"
+foreach ($m in $OllamaModels) {
+    $name, $tag = $m -split ':', 2
+    if (-not (Test-Path (Join-Path $manifestBase (Join-Path $name $tag)))) { $ollamaPresent = $false; break }
+}
 if ($env:SKIP_OLLAMA_PULL -eq "1") {
     Write-Host "    SKIP_OLLAMA_PULL=1 - assuming ollama\models already complete"
+} elseif ($ollamaPresent) {
+    Write-Host "    all Ollama models already present in ollama\models - skipping download"
 } else {
     New-Item -ItemType Directory -Force -Path $OllamaModelsDir | Out-Null
     docker pull ollama/ollama:latest
@@ -43,7 +53,7 @@ if ($env:SKIP_OLLAMA_PULL -eq "1") {
     $pullSh = 'set -e; ollama serve >/tmp/serve.log 2>&1 & SVPID=$!; until ollama list >/dev/null 2>&1; do sleep 1; done; for m in qwen2.5:72b-instruct-q8_0 gemma3:27b-it-q8_0 nomic-embed-text:latest; do echo "[pull] $m"; ollama pull "$m"; done; ollama list; kill "$SVPID" 2>/dev/null || true'
     # Effectively unlimited — keep resuming until the pull completes. Set
     # $env:MAX_PULL_ATTEMPTS to a number to make it give up after that many tries.
-    $maxAttempts = if ($env:MAX_PULL_ATTEMPTS) { [int64]$env:MAX_PULL_ATTEMPTS } else { [int64]9999999999999999 }
+    $maxAttempts = if ($env:MAX_PULL_ATTEMPTS) { [int64]$env:MAX_PULL_ATTEMPTS } else { [int64]9999999 }
     $ok = $false
     $i = 0
     while ($i -lt $maxAttempts) {

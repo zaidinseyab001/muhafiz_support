@@ -50,6 +50,16 @@ class Settings(BaseSettings):
     # Granularity of audio pulled from a live stream and fed to the segmenter.
     stream_read_s: float = 0.5
 
+    # --- Auto CPU fallback -------------------------------------------------
+    # Prefer the GPU, but if the requested CUDA device is unavailable, too
+    # small, or runs out of memory at load time, fall back to CPU automatically
+    # instead of crashing. Set false to force the requested device and fail hard.
+    auto_cpu_fallback: bool = True
+    # Minimum free GPU memory (MB) required to even attempt a CUDA load.
+    # whisper-large-v3 fp16 needs ~3 GB to load plus headroom for inference;
+    # below this the service uses CPU. Tune for your model/box.
+    min_free_vram_mb: int = 6000
+
     # --- Server ------------------------------------------------------------
     host: str = "0.0.0.0"
     port: int = 8000

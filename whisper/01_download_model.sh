@@ -26,7 +26,7 @@ MODEL_DIR="${MODEL_CACHE_DIR}/whisper-large-v3"
 LOG_FILE="${SCRIPT_DIR}/build_logs/model_download.log"
 DNS1="${WHISPER_DNS:-${OLLAMA_DNS:-1.1.1.1}}"
 PY_IMAGE="python:3.12-slim"
-MAX_ATTEMPTS="${MAX_ATTEMPTS:-9999999999999999}"
+MAX_ATTEMPTS="${MAX_ATTEMPTS:-9999999}"
 
 RED='\033[0;31m'; GREEN='\033[0;32m'; BLUE='\033[0;34m'; YELLOW='\033[1;33m'; NC='\033[0m'
 mkdir -p "$(dirname "$LOG_FILE")"
