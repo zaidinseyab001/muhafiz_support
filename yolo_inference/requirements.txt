@@ -26,6 +26,7 @@ torchvision>=0.20.0
 # Frame decode / encode / annotation.
 opencv-python>=4.8.0
 numpy>=1.24.0,<2.3.0
+lap<=0.5.13
 
 # WebSocket server + reference client.
 # Pinned to the 12.x line: server.py targets the v12 API

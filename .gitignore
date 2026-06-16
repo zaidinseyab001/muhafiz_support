@@ -13,7 +13,11 @@ pip-wheel-metadata/
 _bundle/
 
 postman
-
+cdr_sample_data.csv
+ground_truth_key.csv
+incidents.csv
+generate_cdr_incidents.py
+generate_cdr.py
 
 # --- Virtual envs ----------------------------------------------------------
 venv/
