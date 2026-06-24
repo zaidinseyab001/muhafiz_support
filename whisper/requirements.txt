@@ -1,8 +1,7 @@
 --extra-index-url https://download.pytorch.org/whl/cu130
+torch==2.5.0+cu130
+torchvision==0.20.0+cu130
 torchaudio==2.5.0+cu130
-torch>=2.5.0+cu130
-torchvision>=0.20.0+cu130
-
 
 
 # ----------------------------------------------------------------------------
