@@ -15,9 +15,9 @@ ultralytics>=8.3.0
 # Or pin them directly in this file by replacing the two `torch*` lines with:
 #
 --extra-index-url https://download.pytorch.org/whl/cu130
-torch==2.5.0+cu130
-torchvision==0.20.0+cu130
-torchaudio==2.5.0+cu130
+torch==2.9.0
+torchaudio==2.9.0
+torchvision==0.24.0.0
 
 #
 # Verify the CUDA build with:
