@@ -1,13 +1,9 @@
-# ============================================================================
-# PyTorch CUDA 12.1 wheels (compatible with the CUDA 12.4 runtime base image)
-# ============================================================================
---extra-index-url https://download.pytorch.org/whl/cu121
+--extra-index-url https://download.pytorch.org/whl/cu130
+torchaudio==2.5.0+cu130
+torch>=2.5.0+cu130
+torchvision>=0.20.0+cu130
 
-# ----------------------------------------------------------------------------
-# Deep learning stack (GPU)
-# ----------------------------------------------------------------------------
-torch==2.4.1+cu121
-torchaudio==2.4.1+cu121
+
 
 # ----------------------------------------------------------------------------
 # Whisper via HuggingFace Transformers
@@ -39,4 +35,3 @@ numpy==1.26.4
 # no compiler needed). Used to cut live streams at silence boundaries.
 # ----------------------------------------------------------------------------
 webrtcvad-wheels==2.0.14
-

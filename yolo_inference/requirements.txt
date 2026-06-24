@@ -14,14 +14,14 @@ ultralytics>=8.3.0
 #
 # Or pin them directly in this file by replacing the two `torch*` lines with:
 #
-#   --extra-index-url https://download.pytorch.org/whl/cu130
-#   torch>=2.5.0
-#   torchvision>=0.20.0
+  --extra-index-url https://download.pytorch.org/whl/cu130
+  torch>=2.5.0
+  torchvision>=0.20.0
 #
 # Verify the CUDA build with:
 #   python -c "import torch; print(torch.cuda.is_available(), torch.version.cuda)"
-torch>=2.5.0
-torchvision>=0.20.0
+# torch>=2.5.0
+# torchvision>=0.20.0
 
 # Frame decode / encode / annotation.
 opencv-python>=4.8.0
@@ -38,3 +38,7 @@ websockets>=12.0,<13
 
 # .env loader for runtime configuration.
 python-dotenv>=1.0.0
+
+
+
+
