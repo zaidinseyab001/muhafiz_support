@@ -1,29 +1,31 @@
 services:
 
-  ollama:
-    build:
-      context: ./ollama
-      dockerfile: Dockerfile
-    image: muhafiz/ollama:latest
-    container_name: muhafiz_ollama
-    restart: unless-stopped
-    entrypoint: ["/bin/sh", "/entrypoint.sh"]
-    volumes:
-      # Named volume initializes from the image's /root/.ollama on first
-      # boot, so the baked models land here and persist across restarts.
-      - ollama_models:/root/.ollama
-      - ./ollama/entrypoint.sh:/entrypoint.sh:ro
-    ports:
-      - "${OLLAMA_PORT:-11434}:11434"
-    env_file:
-      - ./.env
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
+  # ollama:
+  #   build:
+  #     context: ./ollama
+  #     dockerfile: Dockerfile
+  #   image: muhafiz/ollama:latest
+  #   container_name: muhafiz_ollama
+  #   restart: unless-stopped
+  #   entrypoint: ["/bin/sh", "/entrypoint.sh"]
+  #   volumes:
+  #     # Named volume initializes from the image's /root/.ollama on first
+  #     # boot, so the baked models land here and persist across restarts.
+  #     - ollama_models:/root/.ollama
+  #     - ./ollama/entrypoint.sh:/entrypoint.sh:ro
+  #   ports:
+  #     - "${OLLAMA_PORT:-11434}:11434"
+  #   env_file:
+  #     - ./.env
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: all
+  #             capabilities: [gpu]
+
+
 
   yolo:
     build:
